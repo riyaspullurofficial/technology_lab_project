@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../controllers/home_dashboard_controller.dart';
 import '../../utils/config/colors.dart';
 import '../../utils/config/shared_preferences.dart';
 import '../../utils/testing_data/image_list.dart';
@@ -14,7 +15,7 @@ import '../user_screens/login_screen.dart';
 
 class SplashScreen extends StatelessWidget {
   SplashScreen({super.key});
-
+  final homeDashboardController = Get.put(HomeDashboardController());
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,7 +83,13 @@ class SplashScreen extends StatelessWidget {
                       if (value == null || value == '') {
                         Get.to(LoginScreen());
                       } else {
-                        Get.to(MainScreen());
+
+                        homeDashboardController.getHomeTitle(callback: (){
+                          print("main sctreen");
+                          Get.to(MainScreen());
+                        });
+
+
                       }
                     });
                   },

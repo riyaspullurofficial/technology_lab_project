@@ -12,7 +12,8 @@ import '../utils/config/snackbar.dart';
 import '../utils/config/string_constants.dart';
 
 class LoginController extends BaseController {
-  var loginResponse = Rxn<LoginResponse>();
+  RemoteServices remoteServices = RemoteServices();
+  var loginResponse = Rxn<LoginResponse /*LoginResponseModelTest*/ >();
   var verifyOtpResponseModel = Rxn<VerifyOtpResponseModel>();
 
   var countryCode = "+974";
@@ -22,20 +23,28 @@ class LoginController extends BaseController {
   void generateOTP({required Function callback}) {
     loginResponse.value = null;
 
-    if (mobileNumber == '') {
+    if (mobileNumber == "") {
       snackBar(snackDataString: 'Please fill data');
     } else {
       showLoader();
-      /*LoginUploadModel loginUploadModel =
+      print("mobile number$mobileNumber  $countryCode");
+
+      LoginUploadModel loginUploadModel =
           LoginUploadModel(phoneCode: countryCode, phone: mobileNumber);
-      RemoteServices.loginRemote(loginUploadModel: loginUploadModel)
+      RemoteServices.loginRemote(
+              loginUploadModel: loginUploadModel,
+              phoneCode: countryCode,
+              contact: mobileNumber)
           .then((value) {
         loginResponse.value = value;
 
         print(
             "  generateOTP Response == status code==${value?.status}===$value");
-
-        callback();
+        if (value!.status! >= 200 && value.status! < 300) {
+          hideLoader();
+          callback();
+        }
+        hideLoader();
       }).onError((error, stackTrace) {
         hideLoader();
 
@@ -44,14 +53,42 @@ class LoginController extends BaseController {
             snackBar(snackDataString: error.message!);
           }
         } else {
-          */ /*      snackBar(snackDataString: 'Api failed');*/ /* if (error
-              is ErrorResponseModel) {
+          if (error is ErrorResponseModel) {
+            print(error.message);
+            snackBar(
+                snackDataString:
+                    'otpUploadRemote Api failed ==${error.message}');
+          }
+        }
+      });
+      /*   hideLoader();
+      callback();*/
+
+      /*  remoteServices.userLoginRemote(countryCode: countryCode, phone: '31404159')
+          .then((value) {
+        loginResponse.value = value;
+
+        print(
+            "  generateOTP Response == status code==${value?.status}===$value");
+        if (value!.status! >= 200 && value.status! < 300) {
+          hideLoader();
+          callback();
+        }
+        hideLoader();
+      }).onError((error, stackTrace) {
+        hideLoader();
+
+        if (error is ErrorResponseModel) {
+          if (error.message != null) {
+            snackBar(snackDataString: error.message!);
+          }
+        } else {
+          snackBar(snackDataString: 'Api failed');
+          if (error is ErrorResponseModel) {
             print(error.message);
           }
         }
       });*/
-      hideLoader();
-      callback();
     }
   }
 
@@ -62,7 +99,7 @@ class LoginController extends BaseController {
       snackBar(snackDataString: 'Please fill data');
     } else {
       showLoader();
-      /*VerifyOtpUploadModel verifyOtpUploadModel =
+      VerifyOtpUploadModel verifyOtpUploadModel =
           VerifyOtpUploadModel(otp: otp);
       RemoteServices.otpUploadRemote(verifyOtpUploadModel: verifyOtpUploadModel)
           .then((value) {
@@ -70,8 +107,11 @@ class LoginController extends BaseController {
 
         print(
             "  otpUploadRemote Response == status code==${value?.status}===$value");
-
-        callback();
+        if (verifyOtpResponseModel.value?.data?.token != null) {
+          accessTokenSaveSharedPreferences(
+              acsToken: verifyOtpResponseModel.value!.data!.token!);
+          callback();
+        }
       }).onError((error, stackTrace) {
         hideLoader();
 
@@ -80,16 +120,18 @@ class LoginController extends BaseController {
             snackBar(snackDataString: error.message!);
           }
         } else {
-          */ /*      snackBar(snackDataString: 'Api failed');*/ /* if (error
-              is ErrorResponseModel) {
+          if (error is ErrorResponseModel) {
             print(error.message);
+            snackBar(
+                snackDataString:
+                    'otpUploadRemote Api failed ==${error.message}');
           }
         }
-      });*/
-      accessTokenSaveSharedPreferences(acsToken: testToken);
+      });
+/*      accessTokenSaveSharedPreferences(acsToken: testToken);
       hideLoader();
 
-      callback();
+      callback();*/
     }
   }
 }
